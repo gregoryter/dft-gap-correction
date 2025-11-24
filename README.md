@@ -71,11 +71,11 @@ cd dft-gap-correction
 pip install -r requirements.txt
 ```
 
-> **Recommendation:** It is highly suggested to use a clean `conda` or `venv` environment to avoid version conflicts with `matminer` or `scikit-learn`.
+
 
 -----
 
-## 🚀 Quickstart: Predict a Corrected Band Gap
+## Quickstart: Predict a Corrected Band Gap
 
 You can use the Python API to correct a PBE gap. You only need:
 
@@ -111,7 +111,7 @@ python src/bandgap_model_api_v2.py
 
 -----
 
-## 🏋️ Retrain the Model (Optional)
+## Retrain the Model (Optional)
 
 If you want to retrain the model from scratch using the provided data:
 
@@ -129,18 +129,18 @@ python src/train_bandgap_optimized.py
 
 -----
 
-## 📌 Dataset
+##  Dataset
 
 The training dataset (`data/final.csv`) includes:
 
   * PBE band gaps (`gap pbe`)
   * Experimental band gaps (`expt_gap`)
   * Magpie composition descriptors
-  * Composition IDs used for GroupKFold splitting
+  * Composition IDs 
 
 -----
 
-## 🧠 Model Details
+##  Model Details
 
   * **Algorithm:** XGBoost Regressor
   * **Target:** $\Delta E$ correction (Expt − PBE)
@@ -150,35 +150,13 @@ The training dataset (`data/final.csv`) includes:
 
 Full hyperparameters and training metadata are stored in `metadata/bandgap_model_metadata_v4.yaml`.
 
------
 
-## ⚠️ Large Model File Note
 
-The file `models/bandgap_correction_model_xgb.joblib` is approximately **76 MB**.
-GitHub allows this, but recommends LFS for files >50 MB.
-
-If you want to use Git LFS:
-
-```bash
-git lfs install
-git lfs track "*.joblib"
-git add .gitattributes models/bandgap_correction_model_xgb.joblib
-git commit -m "Track model with Git LFS"
-git push
-```
-
------
-
-## 📜 License
-
-This project is released under the **MIT License**.
-See `LICENSE` for details.
-
------
 
 ## 👤 Author
 
-Maintained by **Grigoris [Your Last Name]**  
-*Computational Materials Science • DFT • ML for materials*
+Maintained by **Grigoris Tersenov**  
 
-If you use or adapt this, feel free to cite this repository!
+
+
+
