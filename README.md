@@ -29,15 +29,12 @@ Some examples of why the underestimation is difficult to correct analytically:
 Because of this, data-driven models provide a natural path forward.  
 This project trains a machine-learning model to predict a **correction term**:
 
-\[
-\Delta E = E_\text{experimental} - E_\text{DFT(PBE)}
-\]
+ΔE = E_experimental − E_DFT(PBE)
+
 
 Once trained, the model predicts:
 
-\[
-E_\text{predicted} = E_\text{DFT} + \Delta E_\text{model}
-\]
+E_predicted = E_DFT + ΔE_model
 
 The outcome is:
 
@@ -48,4 +45,5 @@ The outcome is:
 ---
 
 ## 🗂 Repository Structure
+
 
