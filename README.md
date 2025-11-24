@@ -1,71 +1,65 @@
-```markdown
-# DFT → Experimental Band Gap Correction Model  
+# DFT $\to$ Experimental Band Gap Correction Model
 ### Machine-learning pipeline for predicting realistic semiconductor band gaps
 
-This repository provides a reproducible machine-learning framework that maps  
-**DFT-calculated (PBE) band gaps** to **experimental band gaps** using an XGBoost-based **correction model**.
+This repository provides a reproducible machine-learning framework that maps **DFT-calculated (PBE) band gaps** to **experimental band gaps** using an XGBoost-based **correction model**.
 
 It includes:
-
-- Data preprocessing and feature engineering  
-- **Magpie** composition descriptors (via `matminer`)  
-- A correction-based training strategy  
-- Optional uncertainty estimation from tree variance  
-- A clean Python API for standalone predictions  
+- Data preprocessing and feature engineering
+- **Magpie** composition descriptors (via `matminer`)
+- A correction-based training strategy
+- Optional uncertainty estimation from tree variance
+- A clean Python API for standalone predictions
 
 ---
 
 ## 🔍 Overview & Motivation
 
-Density Functional Theory (DFT), particularly with the PBE functional, is well-known to **systematically underestimate semiconductor band gaps**.  
-Yet this error is **not uniform, not linear, and not governed by a simple empirical trend**. Instead, the discrepancy depends on subtle, composition-specific electronic effects.
+Density Functional Theory (DFT), particularly with the PBE functional, is well-known to **systematically underestimate semiconductor band gaps**. Yet this error is **not uniform, not linear, and not governed by a simple empirical trend**. Instead, the discrepancy depends on subtle, composition-specific electronic effects.
 
-Some reasons the underestimation is hard to correct analytically:
+**Why Analytical Correction Fails:**
+- Different chemical families exhibit *very different* magnitudes of error.
+- No single scaling factor or linear regression captures all materials.
+- Orbital character, bonding environment, and electronegativity contrast introduce **highly nonlinear corrections**.
 
-- Different chemical families exhibit *very different* magnitudes of error  
-- No single scaling factor or linear regression captures all materials  
-- Orbital character, bonding environment, and electronegativity contrast introduce **highly nonlinear corrections**  
-- Even materials with similar DFT gaps can have **very different experimental values**
+### The Correction Strategy
 
-Because of this, data-driven models provide a natural path forward.
+Instead of predicting the experimental gap directly, this model learns a **correction term** $\Delta E$:
 
-### Correction strategy
-
-Instead of predicting the experimental gap directly, the model learns a **correction term**:
-
-`ΔE = E_experimental − E_DFT(PBE)`
+$$
+\Delta E = E_{\text{experimental}} - E_{\text{DFT(PBE)}}
+$$
 
 Then a corrected prediction is computed as:
 
-`E_predicted = E_DFT + ΔE_model`
+$$
+E_{\text{predicted}} = E_{\text{DFT}} + \Delta E_{\text{model}}
+$$
 
-This makes the model more robust and easier to generalize across compositions.
+This makes the model more robust and easier to generalize across diverse compositions.
 
 ---
 
 ## 🗂 Repository Structure
 
-```
-
+```text
 bandgapfix/
 ├── data/
-│   └── final.csv                         # training dataset
+│   └── final.csv                       # Training dataset
 ├── examples/
-│   └── bandgapfix_benchmark_results.csv  # sample predictions / benchmarking
+│   └── bandgapfix_benchmark_results.csv # Sample predictions / benchmarking
 ├── metadata/
-│   └── bandgap_model_metadata_v4.yaml    # model config + training notes
+│   └── bandgap_model_metadata_v4.yaml   # Model config + training notes
 ├── models/
-│   └── bandgap_correction_model_xgb.joblib  # trained pipeline (Imputer+Scaler+XGB)
+│   └── bandgap_correction_model_xgb.joblib  # Trained pipeline (Imputer+Scaler+XGB)
 ├── src/
-│   ├── train_bandgap_optimized.py        # training script
-│   └── bandgap_model_api_v2.py           # prediction API
+│   ├── train_bandgap_optimized.py       # Training script
+│   └── bandgap_model_api_v2.py          # Prediction API
 ├── requirements.txt
 ├── README.md
 └── LICENSE
+```
 
-````
-
----
+-----
 
 ## ⚙️ Installation
 
@@ -75,20 +69,20 @@ Clone the repository and install dependencies:
 git clone https://github.com/<your-username>/dft-gap-correction.git
 cd dft-gap-correction
 pip install -r requirements.txt
-````
+```
 
-> Recommended: use a clean conda/venv environment.
+> **Recommendation:** It is highly suggested to use a clean `conda` or `venv` environment to avoid version conflicts with `matminer` or `scikit-learn`.
 
----
+-----
 
-## 🚀 Quickstart: Predict a corrected band gap
+## 🚀 Quickstart: Predict a Corrected Band Gap
 
-You only need:
+You can use the Python API to correct a PBE gap. You only need:
 
-1. a chemical formula (string)
-2. a DFT/PBE gap value (float, eV)
+1.  A chemical formula (string)
+2.  A DFT/PBE gap value (float, eV)
 
-Example:
+### Python Example
 
 ```python
 from src.bandgap_model_api_v2 import predict_gap
@@ -96,92 +90,74 @@ from src.bandgap_model_api_v2 import predict_gap
 # Example: Silicon with a PBE gap of ~0.6 eV
 pred_gap, unc = predict_gap("Si", 0.6)
 
-print("Predicted experimental gap:", pred_gap, "eV")
-print("Uncertainty estimate:", unc, "eV")
+print(f"Predicted experimental gap: {pred_gap:.2f} eV")
+print(f"Uncertainty estimate:       {unc:.2f} eV")
 ```
 
-Output looks like:
+**Output:**
 
-```
+```text
 Predicted experimental gap: 1.10 eV
-Uncertainty estimate: 0.15 eV
+Uncertainty estimate:       0.15 eV
 ```
 
-### Notes
+### CLI Test
 
-* `formula` must be a **string** (e.g., `"GaN"`, `"CsPbBr3"`).
-* `dft_gap` must be a **number** in eV.
-* If uncertainty cannot be estimated, `unc` returns `None`.
-
----
-
-## 🧪 CLI test (built-in)
-
-You can also run the API module directly:
+You can also run the API module directly from the command line to test the installation (defaults to GaN):
 
 ```bash
 python src/bandgap_model_api_v2.py
 ```
 
-This runs a small test case (GaN by default) and prints a prediction.
+-----
 
----
+## 🏋️ Retrain the Model (Optional)
 
-## 🏋️ Retrain the model (optional)
-
-If you want to retrain from scratch:
+If you want to retrain the model from scratch using the provided data:
 
 ```bash
 python src/train_bandgap_optimized.py
 ```
 
-This will:
+**This script will:**
 
-* read `data/final.csv`
-* build the correction target
-* train the pipeline (IterativeImputer → StandardScaler → XGBoost)
-* save the model to `models/`
-* update metadata in `metadata/`
+1.  Read `data/final.csv`.
+2.  Build the correction target.
+3.  Train the pipeline (IterativeImputer → StandardScaler → XGBoost).
+4.  Save the model to the `models/` directory.
+5.  Update metadata in `metadata/`.
 
----
+-----
 
 ## 📌 Dataset
 
 The training dataset (`data/final.csv`) includes:
 
-* PBE band gaps (`gap pbe`)
-* experimental band gaps (`expt_gap`)
-* Magpie composition descriptors
-* composition IDs used for GroupKFold splitting
+  * PBE band gaps (`gap pbe`)
+  * Experimental band gaps (`expt_gap`)
+  * Magpie composition descriptors
+  * Composition IDs used for GroupKFold splitting
 
-If you want to publish without the dataset, you can:
-
-* remove `data/final.csv`
-* keep only the trained model + example predictions
-* mention “dataset available on request” in this README
-
----
+-----
 
 ## 🧠 Model Details
 
-* **Algorithm:** XGBoost Regressor
-* **Target:** ΔE correction (Expt − PBE)
-* **Pipeline:** IterativeImputer → StandardScaler → XGB
-* **Validation:** GroupKFold (composition-held-out)
-* **Output:** `E_expt_pred = E_dft + ΔE_pred`
+  * **Algorithm:** XGBoost Regressor
+  * **Target:** $\Delta E$ correction (Expt − PBE)
+  * **Pipeline:** IterativeImputer → StandardScaler → XGB
+  * **Validation:** GroupKFold (composition-held-out)
+  * **Output:** $E_{\text{pred}} = E_{\text{dft}} + \Delta E_{\text{pred}}$
 
-Full hyperparameters and training metadata are stored in:
+Full hyperparameters and training metadata are stored in `metadata/bandgap_model_metadata_v4.yaml`.
 
-`metadata/bandgap_model_metadata_v4.yaml`
+-----
 
----
+## ⚠️ Large Model File Note
 
-## ⚠️ Large model file note
+The file `models/bandgap_correction_model_xgb.joblib` is approximately **76 MB**.
+GitHub allows this, but recommends LFS for files >50 MB.
 
-`models/bandgap_correction_model_xgb.joblib` is ~76 MB.
-GitHub allows it, but recommends LFS for files >50 MB.
-
-If you want LFS:
+If you want to use Git LFS:
 
 ```bash
 git lfs install
@@ -191,21 +167,18 @@ git commit -m "Track model with Git LFS"
 git push
 ```
 
----
+-----
 
 ## 📜 License
 
 This project is released under the **MIT License**.
 See `LICENSE` for details.
 
----
+-----
 
 ## 👤 Author
 
-Maintained by **Grigoris <your-last-name>**
-Computational Materials Science • DFT • ML for materials
+Maintained by **Grigoris [Your Last Name]**  
+*Computational Materials Science • DFT • ML for materials*
 
-If you use or adapt this, feel free to cite or message me!
-
-```
-```
+If you use or adapt this, feel free to cite this repository!
