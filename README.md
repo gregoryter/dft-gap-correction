@@ -12,7 +12,7 @@ It includes:
 
 ---
 
-## 🔍 Overview & Motivation
+## Overview & Motivation
 
 Density Functional Theory (DFT), particularly with the PBE functional, is well-known to **systematically underestimate semiconductor band gaps**. Yet this error is **not uniform, not linear, and not governed by a simple empirical trend**. Instead, the discrepancy depends on subtle, composition-specific electronic effects.
 
@@ -156,6 +156,7 @@ Full hyperparameters and training metadata are stored in `metadata/bandgap_model
 ## 👤 Author
 
 Maintained by **Grigoris Tersenov**  
+
 
 
 
